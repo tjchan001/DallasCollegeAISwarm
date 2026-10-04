@@ -1,0 +1,2817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWARM: The War Council</title>
+
+<style>
+:root {
+    --stone-dark: #17181b;
+    --stone: #292b2f;
+    --stone-light: #41434a;
+    --iron: #777b83;
+    --wood: #5b3824;
+    --wood-light: #8a5a35;
+    --parchment: #d8c69d;
+    --parchment-dark: #a89268;
+    --gold: #d7ad4a;
+    --gold-bright: #f2d477;
+    --red: #a9473f;
+    --green: #6f9a68;
+    --blue: #668bb2;
+    --glow: #67d8ff;
+    --white: #eee8d8;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    min-height: 100%;
+    background:
+        radial-gradient(circle at 50% 20%, #383b42 0%, #1b1c20 55%, #0e0f11 100%);
+    color: var(--white);
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ---------------------------------------------------------
+   FRAME
+--------------------------------------------------------- */
+
+#game {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    padding: 18px;
+}
+
+.frame {
+    width: min(1180px, 100%);
+    min-height: calc(100vh - 36px);
+    border: 8px solid #151619;
+    outline: 2px solid #62656b;
+    background:
+        linear-gradient(90deg,
+            rgba(255,255,255,.025),
+            transparent 8%,
+            transparent 92%,
+            rgba(255,255,255,.025)),
+        var(--stone);
+    box-shadow:
+        0 0 0 5px #08090a,
+        0 25px 80px rgba(0,0,0,.65),
+        inset 0 0 80px rgba(0,0,0,.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.frame::before,
+.frame::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 13px;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #292a2e 0 45px,
+            #17181b 45px 48px
+        );
+    opacity: .8;
+}
+
+.frame::before { top: 0; }
+.frame::after { bottom: 0; }
+
+.sound-toggle {
+    position: absolute;
+    top: 17px;
+    right: 18px;
+    z-index: 2;
+    width: 38px;
+    height: 34px;
+    border: 1px solid #777b83;
+    background: rgba(20,21,24,.8);
+    color: var(--gold-bright);
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.audio-controls {
+    position: absolute;
+    top: 17px;
+    right: 18px;
+    z-index: 2;
+    display: flex;
+    gap: 5px;
+}
+
+.audio-controls .sound-toggle {
+    position: static;
+    width: auto;
+    min-width: 38px;
+    padding: 0 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.sound-toggle:hover {
+    border-color: var(--gold);
+}
+
+/* ---------------------------------------------------------
+   SCREENS
+--------------------------------------------------------- */
+
+.screen {
+    display: none;
+    min-height: calc(100vh - 52px);
+    padding: 34px;
+    position: relative;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------------------------------------------------------
+   TITLE SCREEN
+--------------------------------------------------------- */
+
+#titleScreen {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background:
+        radial-gradient(circle at center, rgba(103,216,255,.07), transparent 35%),
+        radial-gradient(circle at center, rgba(215,173,74,.08), transparent 65%);
+}
+
+.crown {
+    font-size: 70px;
+    filter: drop-shadow(0 0 15px rgba(215,173,74,.3));
+    margin-bottom: 8px;
+}
+
+.title {
+    font-size: clamp(42px, 8vw, 86px);
+    letter-spacing: .12em;
+    color: var(--gold-bright);
+    text-shadow:
+        0 3px 0 #543e19,
+        0 0 25px rgba(215,173,74,.18);
+    margin: 0;
+}
+
+.subtitle {
+    font-size: clamp(18px, 3vw, 28px);
+    letter-spacing: .3em;
+    color: #b8c1ca;
+    margin: 12px 0 35px;
+    text-transform: uppercase;
+}
+
+.intro-panel {
+    max-width: 700px;
+    padding: 24px 30px;
+    background:
+        linear-gradient(rgba(90,56,36,.72), rgba(50,31,21,.82));
+    border: 3px solid var(--wood-light);
+    box-shadow:
+        inset 0 0 30px rgba(0,0,0,.35),
+        0 10px 35px rgba(0,0,0,.35);
+}
+
+.intro-panel p {
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 7px 0;
+}
+
+.small-caps {
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--gold-bright);
+}
+
+.main-button {
+    margin-top: 28px;
+    padding: 17px 38px;
+    border: 3px solid #8c6b2b;
+    background:
+        linear-gradient(#6c5124, #342716);
+    color: #f7e5a7;
+    font: bold 19px Georgia, serif;
+    letter-spacing: .15em;
+    cursor: pointer;
+    box-shadow:
+        inset 0 1px rgba(255,255,255,.15),
+        0 6px 15px rgba(0,0,0,.4);
+    transition: .2s;
+}
+
+.main-button:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(#87662b, #443319);
+    box-shadow:
+        0 0 18px rgba(215,173,74,.25),
+        0 8px 20px rgba(0,0,0,.5);
+}
+
+/* ---------------------------------------------------------
+   HEADER
+--------------------------------------------------------- */
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #55585e;
+    padding: 0 170px 18px 0;
+    margin-bottom: 22px;
+}
+
+.game-header h2 {
+    margin: 0;
+    color: var(--gold-bright);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.progress {
+    display: flex;
+    gap: 7px;
+}
+
+.progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #45474c;
+    border: 1px solid #777;
+}
+
+.progress-dot.done {
+    background: var(--gold);
+    box-shadow: 0 0 9px rgba(215,173,74,.5);
+}
+
+.progress-dot.current {
+    background: var(--glow);
+    box-shadow: 0 0 12px rgba(103,216,255,.6);
+}
+
+/* ---------------------------------------------------------
+   MAP
+--------------------------------------------------------- */
+
+.map {
+    flex: 1;
+    min-height: 320px;
+    position: relative;
+    border: 4px solid #725c37;
+    background:
+        radial-gradient(circle at 35% 45%, rgba(111,154,104,.24), transparent 28%),
+        radial-gradient(circle at 72% 65%, rgba(169,71,63,.2), transparent 25%),
+        repeating-linear-gradient(
+            25deg,
+            transparent 0 25px,
+            rgba(100,80,45,.08) 25px 27px
+        ),
+        #9b8962;
+    box-shadow: inset 0 0 50px rgba(50,30,10,.35);
+    overflow: hidden;
+}
+
+.map.fogged::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 78% 38%, transparent 0 12%, rgba(220,225,222,.18) 28%, transparent 44%),
+        linear-gradient(100deg, transparent 35%, rgba(205,214,211,.18) 68%, rgba(205,214,211,.34));
+    opacity: .8;
+}
+
+.enemy-intel {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    z-index: 1;
+    width: min(250px, 42%);
+    padding: 12px 14px;
+    border: 1px solid rgba(55,49,35,.55);
+    background: rgba(216,198,157,.86);
+    color: #3c3020;
+    font-size: 12px;
+    line-height: 1.45;
+    box-shadow: 0 4px 12px rgba(50,30,10,.25);
+}
+
+.enemy-intel strong {
+    display: block;
+    margin-bottom: 5px;
+    letter-spacing: .08em;
+}
+
+.enemy-intel .confidence {
+    color: #6d4f1e;
+    font-weight: bold;
+}
+
+.map::before {
+    content: "NORTHERN REALMS";
+    position: absolute;
+    top: 18px;
+    left: 25px;
+    color: rgba(50,40,25,.35);
+    font-size: 25px;
+    letter-spacing: .2em;
+    transform: rotate(-4deg);
+}
+
+.mountain {
+    position: absolute;
+    width: 100px;
+    height: 70px;
+    background: #645c50;
+    clip-path: polygon(0 100%, 35% 20%, 55% 58%, 76% 5%, 100% 100%);
+    opacity: .45;
+}
+
+.m1 { left: 12%; top: 20%; }
+.m2 { left: 22%; top: 10%; transform: scale(.7); }
+.m3 { right: 15%; top: 27%; transform: scale(1.2); }
+
+.route {
+    position: absolute;
+    height: 4px;
+    background: #5c4b32;
+    transform-origin: left center;
+    opacity: .65;
+}
+
+.route.a {
+    width: 38%;
+    left: 17%;
+    top: 57%;
+    transform: rotate(-18deg);
+}
+
+.route.b {
+    width: 34%;
+    left: 49%;
+    top: 47%;
+    transform: rotate(28deg);
+}
+
+.location {
+    position: absolute;
+    text-align: center;
+    transform: translate(-50%, -50%);
+}
+
+.location .icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #292b2f;
+    border: 4px solid #151619;
+    font-size: 27px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.4);
+}
+
+.location span {
+    display: block;
+    margin-top: 5px;
+    font-weight: bold;
+    color: #392c1d;
+    text-shadow: 0 1px rgba(255,255,255,.25);
+}
+
+.castle { left: 17%; top: 62%; }
+.enemy { right: 17%; top: 38%; }
+
+.choice-panel {
+    margin-top: 22px;
+    padding: 22px;
+    border: 2px solid #55585e;
+    background: rgba(15,16,18,.7);
+}
+
+.choice-panel h3 {
+    margin: 0 0 18px;
+    color: var(--parchment);
+}
+
+.choices {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.choice {
+    min-height: 80px;
+    padding: 14px;
+    background: linear-gradient(#3b3e44, #25272b);
+    color: var(--white);
+    border: 2px solid #666a71;
+    cursor: pointer;
+    font: bold 17px Georgia, serif;
+    transition: .18s;
+}
+
+.choice:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+}
+
+.choice.selected {
+    border-color: var(--gold-bright);
+    background: linear-gradient(#655126, #3c3019);
+    box-shadow: 0 0 15px rgba(215,173,74,.15);
+}
+
+.choice small {
+    display: block;
+    margin-top: 7px;
+    font-weight: normal;
+    color: #b7bbc0;
+    font-size: 13px;
+}
+
+.choice.selected small {
+    color: #eadcae;
+}
+
+.continue {
+    display: block;
+    margin: 18px auto 0;
+    padding: 13px 30px;
+    border: 2px solid #5f6a72;
+    background: #23262a;
+    color: #aeb7be;
+    font: bold 15px Georgia, serif;
+    letter-spacing: .1em;
+    cursor: pointer;
+}
+
+.continue.ready {
+    color: var(--gold-bright);
+    border-color: var(--gold);
+}
+
+/* ---------------------------------------------------------
+   COUNCIL
+--------------------------------------------------------- */
+
+.council-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin: 10px 0 20px;
+}
+
+.agent {
+    min-height: 180px;
+    padding: 15px 10px;
+    text-align: center;
+    background:
+        linear-gradient(rgba(43,45,50,.95), rgba(25,26,29,.98));
+    border: 2px solid #55585e;
+    position: relative;
+    transition: .3s;
+}
+
+.agent.active {
+    border-color: var(--glow);
+    box-shadow:
+        0 0 20px rgba(103,216,255,.18),
+        inset 0 0 20px rgba(103,216,255,.05);
+}
+
+.agent.voted {
+    border-color: var(--gold);
+}
+
+.agent-icon {
+    font-size: 39px;
+    margin-bottom: 7px;
+}
+
+.agent-name {
+    font-weight: bold;
+    color: var(--gold-bright);
+    letter-spacing: .08em;
+}
+
+.agent-role {
+    color: #9ca3aa;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin: 5px 0 12px;
+}
+
+.agent-thought {
+    font-size: 13px;
+    line-height: 1.4;
+    color: #ddd8cb;
+    min-height: 55px;
+}
+
+.vote {
+    margin-top: 9px;
+    color: var(--glow);
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 0;
+}
+
+.agent.voted .vote {
+    opacity: 1;
+}
+
+.reconcile {
+    min-height: 130px;
+    border: 2px solid #3f626f;
+    background:
+        radial-gradient(circle at center, rgba(103,216,255,.08), transparent 65%),
+        #151b1f;
+    padding: 22px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.reconcile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent 0 39px,
+        rgba(103,216,255,.04) 40px
+    );
+    pointer-events: none;
+}
+
+.reconcile-label {
+    color: var(--glow);
+    letter-spacing: .25em;
+    font-size: 13px;
+}
+
+.reconcile-status {
+    font-size: 25px;
+    color: #e4edf1;
+    margin-top: 15px;
+    position: relative;
+}
+
+.reconcile-pulse {
+    display: inline-block;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: .35; }
+    to { opacity: 1; }
+}
+
+/* ---------------------------------------------------------
+   BATTLE
+--------------------------------------------------------- */
+
+.battlefield {
+    flex: 1;
+    min-height: 380px;
+    position: relative;
+    overflow: hidden;
+    border: 4px solid #303238;
+    background:
+        radial-gradient(circle at 30% 50%, rgba(91,56,36,.5), transparent 22%),
+        radial-gradient(circle at 72% 50%, rgba(104,45,41,.45), transparent 22%),
+        linear-gradient(#111418, #20251f 45%, #151914);
+    box-shadow: inset 0 0 60px #000;
+}
+
+.battlefield[data-enemy="ambushers"] {
+    background:
+        radial-gradient(circle at 70% 45%, rgba(111,154,104,.32), transparent 28%),
+        linear-gradient(#17201d, #28362d 48%, #151914);
+}
+
+.battlefield[data-enemy="iron"] {
+    background:
+        radial-gradient(circle at 70% 50%, rgba(130,139,148,.2), transparent 25%),
+        linear-gradient(#111418, #292e31 48%, #151719);
+}
+
+.battlefield[data-enemy="raiders"] {
+    background:
+        radial-gradient(circle at 72% 25%, rgba(169,71,63,.3), transparent 20%),
+        linear-gradient(#171418, #29231f 48%, #151719);
+}
+
+.battlefield[data-result="defeat"]::after,
+.battlefield[data-result="stalemate"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: rgba(20,24,28,.16);
+}
+
+.battlefield::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgba(215,173,74,.2);
+}
+
+.battle-side {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 42%;
+}
+
+.battle-side.player { left: 0; }
+.battle-side.enemy { right: 0; }
+
+.army-label {
+    position: absolute;
+    top: 15px;
+    width: 100%;
+    text-align: center;
+    letter-spacing: .18em;
+    color: #aaa;
+    font-size: 12px;
+}
+
+.units {
+    position: absolute;
+    inset: 55px 30px 30px;
+}
+
+.unit {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 27px;
+    background: #272a2d;
+    border: 3px solid #777;
+    box-shadow: 0 3px 9px #000;
+    transition:
+        left 1.2s cubic-bezier(.2,.8,.3,1),
+        top 1.2s cubic-bezier(.2,.8,.3,1),
+        transform .4s;
+}
+
+.player .unit {
+    border-color: #8fa7b9;
+}
+
+.enemy .unit {
+    border-color: #a16a65;
+}
+
+.unit.attack {
+    transform: scale(1.25);
+}
+
+.unit.hit {
+    animation: hit .35s;
+}
+
+.unit.hidden-unit {
+    opacity: .12;
+    filter: blur(3px);
+}
+
+.unit.disabled-unit {
+    opacity: .3;
+    filter: grayscale(1);
+}
+
+.unit.retreating {
+    opacity: .35;
+    transform: scale(.78);
+}
+
+.unit.enemy-revealed {
+    opacity: 1;
+    filter: none;
+}
+
+.projectile {
+    position: absolute;
+    z-index: 3;
+    width: 28px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--gold-bright);
+    box-shadow: 0 0 8px rgba(242,212,119,.8);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: left .7s linear, top .7s linear;
+}
+
+.projectile::after {
+    content: "";
+    position: absolute;
+    right: -3px;
+    top: -3px;
+    border-left: 7px solid var(--gold-bright);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+}
+
+.battle-note {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    border: 1px solid rgba(215,173,74,.5);
+    background: rgba(10,11,12,.7);
+    color: var(--gold-bright);
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+@keyframes hit {
+    0%,100% { filter: brightness(1); transform: translateX(0); }
+    30% { filter: brightness(2); transform: translateX(-8px); }
+    60% { filter: brightness(.5); transform: translateX(8px); }
+}
+
+.flash {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,235,150,.9), rgba(255,110,50,.15), transparent 70%);
+    pointer-events: none;
+    animation: flash .55s forwards;
+}
+
+@keyframes flash {
+    from { transform: scale(.2); opacity: 1; }
+    to { transform: scale(2); opacity: 0; }
+}
+
+.battle-message {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    min-width: min(90%, 600px);
+    padding: 12px 20px;
+    text-align: center;
+    background: rgba(10,11,12,.86);
+    border: 1px solid #6b6e73;
+    color: #e5dfcf;
+    font-size: 17px;
+}
+
+.result-banner {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,12,.78);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.result-banner.show {
+    display: flex;
+}
+
+.result-box {
+    padding: 30px 50px;
+    border: 3px solid var(--gold);
+    background: linear-gradient(#30291c, #151618);
+    box-shadow: 0 0 40px rgba(215,173,74,.2);
+}
+
+.result-box h2 {
+    color: var(--gold-bright);
+    font-size: 43px;
+    margin: 0 0 10px;
+    letter-spacing: .12em;
+}
+
+.result-box p {
+    margin: 0;
+    color: #c7c1b4;
+}
+
+.result-box.defeat { border-color: var(--red); }
+.result-box.stalemate { border-color: var(--iron); }
+.result-box.costly { border-color: var(--parchment-dark); }
+
+.explanation-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: -10px 0 22px;
+    padding: 12px;
+    border: 1px solid #55585e;
+    background: rgba(18,20,22,.65);
+    color: #c8c5bc;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.explanation-meta strong {
+    display: block;
+    color: var(--parchment);
+    font-size: 11px;
+    letter-spacing: .08em;
+}
+
+/* ---------------------------------------------------------
+   EXPLANATION
+--------------------------------------------------------- */
+
+.decision-box {
+    margin: 5px 0 22px;
+    padding: 22px;
+    border: 3px solid var(--gold);
+    background:
+        linear-gradient(135deg, rgba(86,67,28,.45), rgba(24,25,27,.9));
+    text-align: center;
+}
+
+.decision-box .label {
+    color: #a99c79;
+    font-size: 12px;
+    letter-spacing: .2em;
+}
+
+.decision-box .decision {
+    color: var(--gold-bright);
+    font-size: 31px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+.reason-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+    margin-bottom: 20px;
+}
+
+.reason {
+    padding: 15px;
+    border-left: 4px solid var(--blue);
+    background: rgba(18,20,22,.75);
+}
+
+.reason strong {
+    color: #b8d3e8;
+}
+
+.reason p {
+    margin: 7px 0 0;
+    color: #c8c5bc;
+    line-height: 1.45;
+}
+
+.lesson {
+    padding: 23px;
+    background:
+        linear-gradient(rgba(90,56,36,.62), rgba(45,29,20,.72));
+    border: 2px solid var(--wood-light);
+    text-align: center;
+}
+
+.lesson h3 {
+    color: var(--gold-bright);
+    margin: 0 0 10px;
+    font-size: 24px;
+}
+
+.lesson p {
+    max-width: 760px;
+    margin: 7px auto;
+    line-height: 1.55;
+    color: #ddd3bd;
+}
+
+/* ---------------------------------------------------------
+   RECRUIT
+--------------------------------------------------------- */
+
+#recruitScreen {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.seal {
+    width: 125px;
+    height: 125px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: grid;
+    place-items: center;
+    font-size: 57px;
+    background:
+        radial-gradient(circle, #6b5124, #342716);
+    border: 7px double #c49b42;
+    box-shadow:
+        0 0 25px rgba(215,173,74,.2),
+        inset 0 0 20px rgba(0,0,0,.4);
+}
+
+.recruit-title {
+    font-size: 43px;
+    color: var(--gold-bright);
+    margin: 0;
+}
+
+.recruit-copy {
+    max-width: 700px;
+    font-size: 19px;
+    line-height: 1.6;
+    color: #d0cbc0;
+}
+
+.join {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 18px 38px;
+    border: 3px solid var(--gold);
+    color: var(--gold-bright);
+    background: linear-gradient(#59451f, #2d2415);
+    font: bold 19px Georgia, serif;
+    letter-spacing: .12em;
+    cursor: pointer;
+}
+
+.dessert {
+    margin-top: 20px;
+    color: #9fb1bc;
+    font-size: 14px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE
+--------------------------------------------------------- */
+
+@media (max-width: 800px) {
+    #game {
+        padding: 5px;
+    }
+
+    .frame {
+        min-height: calc(100vh - 10px);
+    }
+
+    .screen {
+        padding: 22px 16px;
+    }
+
+    .audio-controls {
+        top: 14px;
+        right: 14px;
+    }
+
+    .game-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 50px 0 18px;
+    }
+
+    .choices,
+    .council-grid,
+    .reason-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .council-grid {
+        gap: 7px;
+    }
+
+    .agent {
+        min-height: auto;
+        display: grid;
+        grid-template-columns: 45px 1fr;
+        text-align: left;
+        column-gap: 10px;
+        align-items: center;
+    }
+
+    .agent-icon {
+        grid-row: span 3;
+    }
+
+    .agent-role {
+        margin: 2px 0;
+    }
+
+    .agent-thought {
+        min-height: 0;
+    }
+
+    .vote {
+        margin-top: 2px;
+    }
+
+    .title {
+        font-size: 42px;
+    }
+
+    .subtitle {
+        letter-spacing: .16em;
+    }
+
+    .enemy-intel {
+        width: 50%;
+        font-size: 11px;
+    }
+
+    .explanation-meta {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+<div class="frame">
+
+<div class="audio-controls" aria-label="Audio controls">
+    <button id="fxToggle"
+            class="sound-toggle"
+            type="button"
+            aria-label="Turn sound effects off"
+            title="Sound effects on">
+        🔊 FX
+    </button>
+    <button id="musicToggle"
+            class="sound-toggle"
+            type="button"
+            aria-label="Turn music off"
+            title="Music on">
+        🎵 MUSIC
+    </button>
+</div>
+
+<!-- =====================================================
+     TITLE
+====================================================== -->
+
+<section id="titleScreen" class="screen active">
+
+    <div class="crown">⚔</div>
+
+    <h1 class="title">SWARM</h1>
+    <div class="subtitle">The War Council</div>
+
+    <div class="intro-panel">
+        <div class="small-caps">Dallas College AI Club</div>
+
+        <p>
+            Five agents. Five perspectives.
+            One battlefield.
+        </p>
+
+        <p>
+            <strong>You command.</strong>
+            <strong>They decide.</strong>
+        </p>
+
+        <p>
+            Give the war council its objectives.
+            Then watch the swarm reconcile conflicting decisions.
+        </p>
+    </div>
+
+    <button class="main-button" onclick="startGame()">
+        ENTER THE WAR COUNCIL
+    </button>
+
+</section>
+
+
+<!-- =====================================================
+     CHOICE 1
+====================================================== -->
+
+<section id="choice1" class="screen">
+
+    <div class="game-header">
+        <h2>⚔ The War Council</h2>
+        <div class="progress">
+            <span class="progress-dot current"></span>
+            <span class="progress-dot"></span>
+            <span class="progress-dot"></span>
+        </div>
+    </div>
+
+    <div class="map">
+        <div class="mountain m1"></div>
+        <div class="mountain m2"></div>
+        <div class="mountain m3"></div>
+
+        <div class="route a"></div>
+        <div class="route b"></div>
+
+        <div class="location castle">
+            <div class="icon">🏰</div>
+            <span>YOUR FORTRESS</span>
+        </div>
+
+        <div class="location enemy">
+            <div class="icon">☠</div>
+            <span>ENEMY HOST</span>
+        </div>
+
+        <div id="enemyIntel" class="enemy-intel"></div>
+    </div>
+
+    <div class="choice-panel">
+        <h3>The enemy approaches. What matters most?</h3>
+
+        <div class="choices">
+
+            <button class="choice"
+                data-choice="attack"
+                onclick="selectChoice(1, 'attack', this)">
+                ⚔ ATTACK
+                <small>Seize the initiative.</small>
+            </button>
+
+            <button class="choice"
+                data-choice="defend"
+                onclick="selectChoice(1, 'defend', this)">
+                🛡 DEFEND
+                <small>Protect the fortress.</small>
+            </button>
+
+            <button class="choice"
+                data-choice="information"
+                onclick="selectChoice(1, 'information', this)">
+                🔭 GATHER INFORMATION
+                <small>Reduce uncertainty first.</small>
+            </button>
+
+        </div>
+
+        <button id="continue1"
+                class="continue"
+                onclick="nextChoice(2)"
+                disabled>
+            CONTINUE
+        </button>
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CHOICE 2
+====================================================== -->
+
+<section id="choice2" class="screen">
+
+    <div class="game-header">
+        <h2>⚔ The Fog of War</h2>
+        <div class="progress">
+            <span class="progress-dot done"></span>
+            <span class="progress-dot current"></span>
+            <span class="progress-dot"></span>
+        </div>
+    </div>
+
+    <div class="choice-panel" style="margin-top:40px">
+
+        <h3>
+            Scouts report conflicting information.
+            What should the council do?
+        </h3>
+
+        <div class="choices">
+
+            <button class="choice"
+                onclick="selectChoice(2, 'commit', this)">
+                🗡 COMMIT
+                <small>Act immediately despite uncertainty.</small>
+            </button>
+
+            <button class="choice"
+                onclick="selectChoice(2, 'hold', this)">
+                🛡 HOLD
+                <small>Preserve strength until the picture clears.</small>
+            </button>
+
+            <button class="choice"
+                onclick="selectChoice(2, 'investigate', this)">
+                🔎 INVESTIGATE
+                <small>Spend time to discover what is really happening.</small>
+            </button>
+
+        </div>
+
+        <button id="continue2"
+                class="continue"
+                onclick="nextChoice(3)"
+                disabled>
+            CONTINUE
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CHOICE 3
+====================================================== -->
+
+<section id="choice3" class="screen">
+
+    <div class="game-header">
+        <h2>⚔ The Council Divided</h2>
+        <div class="progress">
+            <span class="progress-dot done"></span>
+            <span class="progress-dot done"></span>
+            <span class="progress-dot current"></span>
+        </div>
+    </div>
+
+    <div class="choice-panel" style="margin-top:40px">
+
+        <h3>
+            The agents disagree.
+            How should the swarm resolve the conflict?
+        </h3>
+
+        <div class="choices">
+
+            <button class="choice"
+                onclick="selectChoice(3, 'majority', this)">
+                👥 MAJORITY
+                <small>Let the largest coalition decide.</small>
+            </button>
+
+            <button class="choice"
+                onclick="selectChoice(3, 'confidence', this)">
+                🎯 CONFIDENCE
+                <small>Give greater weight to stronger evidence.</small>
+            </button>
+
+            <button class="choice"
+                onclick="selectChoice(3, 'commander', this)">
+                👑 COMMANDER
+                <small>Let the strategic objective break the tie.</small>
+            </button>
+
+        </div>
+
+        <button id="continue3"
+                class="continue"
+                onclick="beginCouncil()"
+                disabled>
+            CONVENE THE COUNCIL
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     COUNCIL
+====================================================== -->
+
+<section id="councilScreen" class="screen">
+
+    <div class="game-header">
+        <h2>⚔ The Council Convenes</h2>
+        <div class="progress">
+            <span class="progress-dot done"></span>
+            <span class="progress-dot done"></span>
+            <span class="progress-dot done"></span>
+        </div>
+    </div>
+
+    <div class="council-grid">
+
+        <div class="agent" id="agent-scout">
+            <div class="agent-icon">🔭</div>
+            <div>
+                <div class="agent-name">SCOUT</div>
+                <div class="agent-role">Information</div>
+                <div class="agent-thought"></div>
+                <div class="vote">● RECOMMENDATION</div>
+            </div>
+        </div>
+
+        <div class="agent" id="agent-warrior">
+            <div class="agent-icon">⚔</div>
+            <div>
+                <div class="agent-name">WARRIOR</div>
+                <div class="agent-role">Aggression</div>
+                <div class="agent-thought"></div>
+                <div class="vote">● RECOMMENDATION</div>
+            </div>
+        </div>
+
+        <div class="agent" id="agent-guardian">
+            <div class="agent-icon">🛡</div>
+            <div>
+                <div class="agent-name">GUARDIAN</div>
+                <div class="agent-role">Protection</div>
+                <div class="agent-thought"></div>
+                <div class="vote">● RECOMMENDATION</div>
+            </div>
+        </div>
+
+        <div class="agent" id="agent-archer">
+            <div class="agent-icon">🏹</div>
+            <div>
+                <div class="agent-name">ARCHER</div>
+                <div class="agent-role">Positioning</div>
+                <div class="agent-thought"></div>
+                <div class="vote">● RECOMMENDATION</div>
+            </div>
+        </div>
+
+        <div class="agent" id="agent-commander">
+            <div class="agent-icon">👑</div>
+            <div>
+                <div class="agent-name">COMMANDER</div>
+                <div class="agent-role">Strategy</div>
+                <div class="agent-thought"></div>
+                <div class="vote">● RECOMMENDATION</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="reconcile">
+        <div class="reconcile-label">
+            SWARM RECONCILIATION
+        </div>
+
+        <div id="reconcileStatus" class="reconcile-status">
+            <span class="reconcile-pulse">
+                Gathering agent recommendations...
+            </span>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     BATTLE
+====================================================== -->
+
+<section id="battleScreen" class="screen">
+
+    <div class="game-header">
+        <h2>⚔ The Battle</h2>
+    </div>
+
+    <div class="battlefield">
+
+        <div id="battleNote" class="battle-note">Formation awaiting orders</div>
+
+        <div class="battle-side player">
+            <div class="army-label">YOUR SWARM</div>
+
+            <div class="units">
+                <div class="unit" id="p1" style="left:12%;top:25%">⚔</div>
+                <div class="unit" id="p2" style="left:30%;top:55%">🛡</div>
+                <div class="unit" id="p3" style="left:50%;top:30%">🏹</div>
+                <div class="unit" id="p4" style="left:35%;top:75%">⚔</div>
+            </div>
+        </div>
+
+        <div class="battle-side enemy">
+            <div class="army-label">ENEMY HOST</div>
+
+            <div class="units">
+                <div class="unit" id="e1" style="right:12%;top:25%">☠</div>
+                <div class="unit" id="e2" style="right:30%;top:55%">☠</div>
+                <div class="unit" id="e3" style="right:50%;top:30%">☠</div>
+                <div class="unit" id="e4" style="right:35%;top:75%">☠</div>
+            </div>
+        </div>
+
+        <div id="battleMessage" class="battle-message">
+            The armies await their orders...
+        </div>
+
+        <div id="resultBanner" class="result-banner">
+            <div class="result-box">
+                <h2 id="resultTitle">VICTORY</h2>
+                <p id="resultSubtitle"></p>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     EXPLANATION
+====================================================== -->
+
+<section id="explanationScreen" class="screen">
+
+    <div class="game-header">
+        <h2>⚔ Why Did The Swarm Do That?</h2>
+    </div>
+
+    <div class="decision-box">
+        <div class="label">FINAL SWARM DECISION</div>
+        <div id="finalDecision" class="decision">
+            FLANK WITH DEFENSIVE RESERVE
+        </div>
+    </div>
+
+    <div id="explanationMeta" class="explanation-meta"></div>
+
+    <div id="reasonGrid" class="reason-grid"></div>
+
+    <div class="lesson">
+
+        <h3>You Command. They Decide.</h3>
+
+        <p>
+            You did not tell every agent what to do.
+            You gave the system objectives and constraints.
+        </p>
+
+        <p>
+            The agents had different priorities.
+            They disagreed.
+            They communicated.
+            Their recommendations were reconciled.
+        </p>
+
+        <p>
+            The result was a <strong>collective decision</strong>
+            that was not simply the command of any one agent.
+        </p>
+
+        <p>
+            That's the basic idea behind
+            <strong>multi-agent AI systems.</strong>
+        </p>
+
+    </div>
+
+    <button class="main-button"
+            onclick="showScreen('recruitScreen')">
+        SEE WHAT'S BEHIND THE SWARM
+    </button>
+
+</section>
+
+
+<!-- =====================================================
+     RECRUIT
+====================================================== -->
+
+<section id="recruitScreen" class="screen">
+
+    <div class="seal">🤖</div>
+
+    <h1 class="recruit-title">
+        BUILD THE NEXT SWARM.
+    </h1>
+
+    <p class="recruit-copy">
+        The Dallas College AI Club explores systems like this —
+        AI agents, automation, chatbots, intelligent systems,
+        and the unexpected behavior that can emerge when
+        multiple systems work together.
+    </p>
+
+    <p class="recruit-copy">
+        One of our projects was a
+        <strong>Student Success Coach chatbot.</strong>
+    </p>
+
+    <a class="join"
+       href="https://dallasai.club/"
+       target="_blank"
+       rel="noopener noreferrer">
+        ⚔ JOIN THE AI CLUB
+    </a>
+
+    <div class="dessert">
+        Council complete • Claim your dessert
+    </div>
+
+    <button class="continue"
+            style="margin-top:30px"
+            onclick="location.reload()">
+        RUN THE WAR COUNCIL AGAIN
+    </button>
+
+</section>
+
+</div>
+</div>
+
+
+<script>
+/* =========================================================
+   AUDIO
+   Sampled files are optional. Synthetic sounds keep the AI layer
+   understandable and functional before an audio folder is added.
+========================================================= */
+
+class AudioManager {
+    constructor() {
+        this.enabled = this.readPreference("swarmFxEnabled", true);
+        this.musicEnabled = this.readPreference("swarmMusicEnabled", true);
+        this.effectsVolume = 0.34;
+        this.musicVolume = 0.18;
+        this.phaseVolumes = {
+            title: 0,
+            planning: 0.18,
+            council: 0.10,
+            reconciliation: 0.04,
+            battle: 0.23,
+            result: 0.12,
+            explanation: 0.08
+        };
+        this.musicPhase = "planning";
+        this.musicFadeFrame = null;
+        this.audioContext = null;
+        this.samples = new Map();
+        this.music = null;
+        this.musicStarted = false;
+        this.musicFailureReported = false;
+
+        this.samplePaths = {
+            click: "audio/click.mp3",
+            select: "audio/select.mp3",
+            scout: "audio/scout.mp3",
+            sword: "audio/sword.mp3",
+            shield: "audio/shield.mp3",
+            arrow: "audio/arrow.mp3",
+            commander: "audio/commander.mp3",
+            battle: "audio/battle.mp3",
+            victory: "audio/victory.mp3",
+            theme: "Feast of the Fjords.mp3"
+        };
+    }
+
+    readPreference(key, fallback) {
+        try {
+            const value = window.localStorage.getItem(key);
+            return value === null ? fallback : value === "true";
+        } catch (error) {
+            return fallback;
+        }
+    }
+
+    savePreference(key, value) {
+        try {
+            window.localStorage.setItem(key, String(value));
+        } catch (error) {
+            // Preferences are optional; current-session behavior still works.
+        }
+    }
+
+    load(name) {
+        if (this.samples.has(name) || !this.samplePaths[name]) {
+            return this.samples.get(name) || null;
+        }
+
+        const audio = new Audio(this.samplePaths[name]);
+        audio.preload = "auto";
+        audio.volume = name === "theme" ? this.musicVolume : this.effectsVolume;
+        if (name === "theme") {
+            audio.addEventListener("error", () => {
+                this.reportMusicFailure("The soundtrack file could not be loaded.");
+            }, { once: true });
+        } else {
+            audio.addEventListener("error", () => {}, { once: true });
+        }
+        this.samples.set(name, audio);
+        return audio;
+    }
+
+    reportMusicFailure(message) {
+        if (this.musicFailureReported) return;
+        this.musicFailureReported = true;
+        console.warn("[SWARM audio] " + message);
+    }
+
+    ensureContext() {
+        if (this.audioContext) {
+            if (this.audioContext.state === "suspended") {
+                this.audioContext.resume().catch(() => {});
+            }
+            return this.audioContext;
+        }
+
+        try {
+            const Context = window.AudioContext || window.webkitAudioContext;
+            if (!Context) return null;
+            this.audioContext = new Context();
+            return this.audioContext;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    playSample(name) {
+        if (!this.enabled) return false;
+
+        const source = this.load(name);
+        if (!source) return false;
+
+        try {
+            const playback = source.cloneNode();
+            playback.volume = name === "theme" ? this.musicVolume : this.effectsVolume;
+            playback.play().catch(() => this.playSynthetic(name));
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    tone(frequency, duration, type = "sine", volume = 0.04, delay = 0) {
+        if (!this.enabled) return;
+
+        const context = this.ensureContext();
+        if (!context) return;
+
+        try {
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            const start = context.currentTime + delay;
+            const end = start + duration;
+
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, start);
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, end);
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start(start);
+            oscillator.stop(end + 0.02);
+        } catch (error) {
+            // Audio is optional and must never interrupt the demonstration.
+        }
+    }
+
+    playSynthetic(name) {
+        const synthetic = {
+            click: [520, 0.045, "sine", 0.025],
+            select: [660, 0.09, "triangle", 0.04],
+            scout: [440, 0.16, "sine", 0.035],
+            warrior: [150, 0.16, "sawtooth", 0.035],
+            guardian: [110, 0.2, "square", 0.025],
+            archer: [740, 0.12, "triangle", 0.03],
+            commander: [120, 0.28, "sine", 0.045],
+            arrow: [760, 0.1, "triangle", 0.035],
+            sword: [190, 0.12, "sawtooth", 0.04],
+            shield: [105, 0.16, "square", 0.035],
+            battle: [90, 0.2, "sine", 0.035],
+            victory: [523, 0.16, "triangle", 0.045],
+            stalemate: [260, 0.2, "sine", 0.03],
+            defeat: [180, 0.28, "sine", 0.035]
+        }[name];
+
+        if (synthetic) this.tone(...synthetic);
+    }
+
+    play(name) {
+        if (!this.enabled) return;
+
+        const sampled = this.playSample(name);
+        if (!sampled) this.playSynthetic(name);
+    }
+
+    playReconcileTone() {
+        this.tone(260, 0.18, "sine", 0.035);
+        this.tone(390, 0.22, "sine", 0.035, 0.16);
+        this.tone(560, 0.28, "triangle", 0.04, 0.34);
+    }
+
+    playDecisionTone() {
+        this.tone(440, 0.1, "triangle", 0.04);
+        this.tone(660, 0.2, "triangle", 0.045, 0.1);
+    }
+
+    startMusic() {
+        if (!this.musicEnabled) return;
+        if (!this.music) {
+            this.music = this.load("theme");
+            if (!this.music) return;
+            this.music.loop = true;
+        }
+
+        this.musicStarted = true;
+        this.setMusicPhase("planning", false);
+        this.playMusic();
+    }
+
+    playMusic() {
+        if (!this.music || !this.musicEnabled) return;
+        try {
+            const playback = this.music.play();
+            if (playback && typeof playback.catch === "function") {
+                playback.catch(error => {
+                    this.reportMusicFailure("Playback was rejected: " + (error.name || "unknown browser reason") + ".");
+                });
+            }
+        } catch (error) {
+            this.reportMusicFailure("Playback could not start.");
+        }
+    }
+
+    setMusicPhase(phase, fade = true) {
+        this.musicPhase = phase;
+        if (!this.music) return;
+
+        const target = this.phaseVolumes[phase] ?? this.musicVolume;
+        if (!fade) {
+            if (this.musicFadeFrame) cancelAnimationFrame(this.musicFadeFrame);
+            this.music.volume = target;
+            return;
+        }
+
+        const startVolume = this.music.volume;
+        const duration = phase === "reconciliation" ? 650 :
+            phase === "battle" ? 1100 :
+            phase === "result" ? 500 : 800;
+        const startTime = performance.now();
+        if (this.musicFadeFrame) cancelAnimationFrame(this.musicFadeFrame);
+
+        const applyMusicFade = now => {
+            const progress = Math.min(1, (now - startTime) / duration);
+            this.music.volume = startVolume + (target - startVolume) * progress;
+            if (progress < 1) {
+            this.musicFadeFrame = requestAnimationFrame(applyMusicFade);
+            } else {
+                this.musicFadeFrame = null;
+            }
+        };
+
+        this.musicFadeFrame = requestAnimationFrame(applyMusicFade);
+    }
+
+    setPhase(id) {
+        const phase = id === "councilScreen" ? "council" :
+            id === "battleScreen" ? "battle" :
+            id === "explanationScreen" || id === "recruitScreen" ? "explanation" :
+            id === "titleScreen" ? "title" : "planning";
+        this.setMusicPhase(phase);
+    }
+
+    setMusicEnabled(enabled) {
+        this.musicEnabled = enabled;
+        this.savePreference("swarmMusicEnabled", enabled);
+
+        if (!enabled) {
+            if (this.music) this.music.pause();
+            return;
+        }
+
+        if (!this.musicStarted) {
+            this.startMusic();
+            return;
+        }
+
+        if (this.music) {
+            this.playMusic();
+            this.setMusicPhase(this.musicPhase);
+        }
+    }
+
+    setFxEnabled(enabled) {
+        this.enabled = enabled;
+        this.savePreference("swarmFxEnabled", enabled);
+    }
+
+}
+
+const audioManager = new AudioManager();
+
+document.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button || button.disabled || button.id === "fxToggle" || button.id === "musicToggle") return;
+    audioManager.play(button.classList.contains("choice") ? "select" : "click");
+});
+
+function updateAudioControls() {
+    const fxToggle = document.getElementById("fxToggle");
+    const musicToggle = document.getElementById("musicToggle");
+    if (!fxToggle || !musicToggle) return;
+    fxToggle.textContent = audioManager.enabled ? "🔊 FX" : "🔇 FX";
+    musicToggle.textContent = audioManager.musicEnabled ? "🎵 MUSIC" : "🔇 MUSIC";
+    fxToggle.setAttribute("aria-label", audioManager.enabled ? "Turn sound effects off" : "Turn sound effects on");
+    musicToggle.setAttribute("aria-label", audioManager.musicEnabled ? "Turn music off" : "Turn music on");
+    fxToggle.title = audioManager.enabled ? "Sound effects on" : "Sound effects off";
+    musicToggle.title = audioManager.musicEnabled ? "Music on" : "Music off";
+}
+
+const fxToggle = document.getElementById("fxToggle");
+const musicToggle = document.getElementById("musicToggle");
+
+fxToggle?.addEventListener("click", event => {
+    event.stopPropagation();
+    audioManager.setFxEnabled(!audioManager.enabled);
+    updateAudioControls();
+});
+
+musicToggle?.addEventListener("click", event => {
+    event.stopPropagation();
+    audioManager.setMusicEnabled(!audioManager.musicEnabled);
+    updateAudioControls();
+});
+
+updateAudioControls();
+
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+const state = {
+    choices: {
+        priority: null,
+        uncertainty: null,
+        resolution: null
+    },
+    outcome: null,
+    enemy: null,
+    observations: null,
+    initialObservations: null
+};
+
+const enemyProfiles = [
+    {
+        type: "horde",
+        label: "THE HORDE",
+        strength: "HIGH",
+        mobility: "LOW",
+        position: "EASTERN APPROACH",
+        intent: "DIRECT ASSAULT",
+        concealment: 1
+    },
+    {
+        type: "ambushers",
+        label: "THE AMBUSHERS",
+        strength: "LOW",
+        mobility: "HIGH",
+        position: "UNCERTAIN",
+        intent: "DECEPTION",
+        concealment: 5
+    },
+    {
+        type: "iron",
+        label: "THE IRON HOST",
+        strength: "MEDIUM",
+        mobility: "LOW",
+        position: "EASTERN APPROACH",
+        intent: "SLOW ADVANCE",
+        concealment: 1
+    },
+    {
+        type: "raiders",
+        label: "THE RAIDERS",
+        strength: "MEDIUM",
+        mobility: "HIGH",
+        position: "SPLIT APPROACH",
+        intent: "BYPASS THE FORTRESS",
+        concealment: 2
+    }
+];
+
+function initializeRun() {
+    const profile = enemyProfiles[Math.floor(Math.random() * enemyProfiles.length)];
+    state.enemy = { ...profile };
+    state.observations = {
+        strength: "???",
+        mobility: "???",
+        position: "???",
+        intent: "???",
+        confidence: 0.15
+    };
+    state.initialObservations = { ...state.observations };
+}
+
+function updateObservations() {
+    if (!state.enemy || !state.observations) return;
+
+    const observations = state.observations;
+    const priority = state.choices.priority;
+    const uncertainty = state.choices.uncertainty;
+
+    if (priority === "information") {
+        observations.position = state.enemy.position;
+        observations.mobility = state.enemy.mobility === "HIGH" ? "HIGH" : "LOW / MEDIUM";
+        observations.confidence = Math.max(observations.confidence, 0.42);
+    }
+
+    if (uncertainty === "investigate") {
+        observations.position = state.enemy.position;
+        observations.strength = state.enemy.strength;
+        observations.mobility = state.enemy.mobility;
+        observations.confidence = Math.max(observations.confidence, 0.72);
+    }
+
+    if (uncertainty === "hold") {
+        observations.position = observations.position === "???" ? "EASTERN APPROACH?" : observations.position;
+        observations.confidence = Math.max(observations.confidence, 0.3);
+    }
+
+    observations.intent = observations.confidence >= 0.72 && state.enemy.type !== "ambushers"
+        ? state.enemy.intent
+        : "???";
+}
+
+function updateEnemyIntel() {
+    const panel = document.getElementById("enemyIntel");
+    const map = document.querySelector("#choice1 .map");
+    if (!panel || !map || !state.observations) return;
+
+    updateObservations();
+    const observations = state.observations;
+    panel.innerHTML =
+        "<strong>ENEMY FORCE DETECTED</strong>" +
+        "Strength: " + observations.strength + "<br>" +
+        "Mobility: " + observations.mobility + "<br>" +
+        "Position: " + observations.position + "<br>" +
+        "Intent: " + observations.intent + "<br>" +
+        '<span class="confidence">Confidence: ' + Math.round(observations.confidence * 100) + "%</span>";
+    map.classList.toggle("fogged", observations.confidence < 0.7);
+}
+
+
+/* =========================================================
+   SCREEN MANAGEMENT
+========================================================= */
+
+function showScreen(id) {
+
+    document.querySelectorAll(".screen")
+        .forEach(screen => screen.classList.remove("active"));
+
+    document.getElementById(id)
+        .classList.add("active");
+
+    audioManager.setPhase(id);
+
+    window.scrollTo(0, 0);
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+function startGame() {
+    initializeRun();
+    updateEnemyIntel();
+    audioManager.startMusic();
+    showScreen("choice1");
+}
+
+
+/* =========================================================
+   CHOICE SYSTEM
+========================================================= */
+
+function selectChoice(round, value, element) {
+
+    const parent = element.parentElement;
+
+    parent.querySelectorAll(".choice")
+        .forEach(button => button.classList.remove("selected"));
+
+    element.classList.add("selected");
+
+    if (round === 1) {
+        state.choices.priority = value;
+        updateEnemyIntel();
+        document.getElementById("continue1").disabled = false;
+        document.getElementById("continue1").classList.add("ready");
+    }
+
+    if (round === 2) {
+        state.choices.uncertainty = value;
+        updateEnemyIntel();
+        document.getElementById("continue2").disabled = false;
+        document.getElementById("continue2").classList.add("ready");
+    }
+
+    if (round === 3) {
+        state.choices.resolution = value;
+        document.getElementById("continue3").disabled = false;
+        document.getElementById("continue3").classList.add("ready");
+    }
+}
+
+
+function nextChoice(round) {
+
+    if (round === 2) {
+        showScreen("choice2");
+    }
+
+    if (round === 3) {
+        showScreen("choice3");
+    }
+}
+
+
+/* =========================================================
+   AGENT LOGIC
+   ========================================================= */
+
+function calculateAgents() {
+
+    const p = state.choices.priority;
+    const u = state.choices.uncertainty;
+    const r = state.choices.resolution;
+    const observations = state.observations || {};
+
+    const agents = {};
+
+    /*
+       These aren't random personalities.
+
+       Each agent has a different objective function.
+       That is the important part of the demonstration.
+    */
+
+    // SCOUT
+    if (u === "investigate" || p === "information") {
+        agents.scout = {
+            vote: "INVESTIGATE",
+            confidence: observations.confidence || 0.2,
+            thought: observations.confidence >= 0.7
+                ? "The reconnaissance confirms enough to plan around the enemy's real position."
+                : "We still know too little. More information changes the odds."
+        };
+    } else if (u === "hold") {
+        agents.scout = {
+            vote: "HOLD",
+            confidence: 0.45,
+            thought: "The safest assumption is that our intelligence is incomplete."
+        };
+    } else {
+        agents.scout = {
+            vote: "PROBE",
+            confidence: 0.25,
+            thought: "Advance carefully. Test the enemy before committing."
+        };
+    }
+
+    // WARRIOR
+    if (p === "attack" || u === "commit") {
+        agents.warrior = {
+            vote: "ATTACK",
+            confidence: 0.55,
+            thought: "Initiative belongs to whoever strikes first."
+        };
+    } else if (p === "defend") {
+        agents.warrior = {
+            vote: "COUNTERATTACK",
+            confidence: 0.5,
+            thought: "Let them come close enough to make the counterattack decisive."
+        };
+    } else {
+        agents.warrior = {
+            vote: "ATTACK",
+            confidence: 0.35,
+            thought: "We cannot win by waiting forever."
+        };
+    }
+
+    // GUARDIAN
+    if (p === "defend" || u === "hold") {
+        agents.guardian = {
+            vote: "DEFEND",
+            confidence: 0.7,
+            thought: "The fortress is the mission. Losing it ends the campaign."
+        };
+    } else {
+        agents.guardian = {
+            vote: "RESERVE",
+            confidence: 0.65,
+            thought: "Keep a defensive reserve. An aggressive plan needs insurance."
+        };
+    }
+
+    // ARCHER
+    if (p === "information" || u === "investigate") {
+        agents.archer = {
+            vote: "POSITION",
+            confidence: 0.65,
+            thought: "Distance gives us time. Force the enemy to reveal itself."
+        };
+    } else if (p === "attack") {
+        agents.archer = {
+            vote: "FLANK",
+            confidence: 0.6,
+            thought: "A frontal assault wastes our positional advantage."
+        };
+    } else {
+        agents.archer = {
+            vote: "POSITION",
+            confidence: 0.45,
+            thought: "Make them cross open ground before we commit."
+        };
+    }
+
+    // COMMANDER
+    if (r === "commander") {
+
+        if (p === "attack") {
+            agents.commander = {
+                vote: "FLANK",
+                confidence: 0.65,
+                thought: "The objective is pressure, not reckless contact."
+            };
+        } else if (p === "defend") {
+            agents.commander = {
+                vote: "DEFENSIVE COUNTER",
+                confidence: 0.7,
+                thought: "Protect the fortress while preserving the ability to strike."
+            };
+        } else {
+            agents.commander = {
+                vote: "RECONNAISSANCE",
+                confidence: 0.6,
+                thought: "Information is valuable only if it changes our next decision."
+            };
+        }
+
+    } else if (r === "confidence") {
+
+        if (u === "investigate") {
+            agents.commander = {
+                vote: "RECONNAISSANCE",
+                confidence: 0.8,
+                thought: "The evidence favors reducing uncertainty before escalation."
+            };
+        } else {
+            agents.commander = {
+                vote: "DEFENSIVE FLANK",
+                confidence: 0.55,
+                thought: "The strongest evidence supports flexibility over commitment."
+            };
+        }
+
+    } else {
+
+        agents.commander = {
+            vote: "FLANK",
+            confidence: 0.5,
+            thought: "The council's strongest coalition favors maneuver."
+        };
+    }
+
+    return agents;
+}
+
+
+/* =========================================================
+   COUNCIL
+========================================================= */
+
+function beginCouncil() {
+
+    showScreen("councilScreen");
+
+    const agents = calculateAgents();
+
+    const names = [
+        ["scout", 0],
+        ["warrior", 450],
+        ["guardian", 900],
+        ["archer", 1350],
+        ["commander", 1800]
+    ];
+
+    names.forEach(([name, delay]) => {
+
+        setTimeout(() => {
+
+            const element =
+                document.getElementById("agent-" + name);
+
+            const data = agents[name];
+
+            audioManager.play(name);
+
+            element.classList.add("active");
+
+            element.querySelector(".agent-thought")
+                .textContent = data.thought;
+
+            setTimeout(() => {
+                element.classList.add("voted");
+                element.classList.remove("active");
+            }, 650);
+
+        }, delay);
+
+    });
+
+    setTimeout(() => {
+
+        const status =
+            document.getElementById("reconcileStatus");
+
+        status.innerHTML =
+            '<span class="reconcile-pulse">' +
+            'Conflicting recommendations detected...' +
+            '</span>';
+
+        audioManager.setMusicPhase("reconciliation");
+        audioManager.playReconcileTone();
+
+    }, 2900);
+
+    setTimeout(() => {
+
+        document.getElementById("reconcileStatus")
+            .innerHTML =
+            '<span class="reconcile-pulse">' +
+            'Weighting objectives • evidence • risk • strategy...' +
+            '</span>';
+
+        audioManager.setMusicPhase("reconciliation");
+        audioManager.playReconcileTone();
+
+    }, 4000);
+
+    setTimeout(() => {
+
+        resolveSwarm(agents);
+
+    }, 5200);
+}
+
+
+/* =========================================================
+   SWARM RESOLUTION
+========================================================= */
+
+function chooseDecision() {
+    const p = state.choices.priority;
+    const u = state.choices.uncertainty;
+    const r = state.choices.resolution;
+
+    if (p === "information" && u === "investigate") {
+        return "RECONNAISSANCE BEFORE ENGAGEMENT";
+    }
+
+    if (p === "defend" && u === "hold") {
+        return "FORTRESS DEFENSE";
+    }
+
+    if (p === "attack" && u === "commit" && r === "majority") {
+        return "FLANK WITH ATTACKING FORCE";
+    }
+
+    if (r === "commander" && p === "defend") {
+        return "DEFENSIVE COUNTERATTACK";
+    }
+
+    if (r === "commander" || p === "defend") {
+        return "FLANK WITH DEFENSIVE RESERVE";
+    }
+
+    return "FLANK WITH ATTACKING FORCE";
+}
+
+function evaluateOutcome(agents, decision) {
+    const type = state.enemy.type;
+    const p = state.choices.priority;
+    const u = state.choices.uncertainty;
+    const r = state.choices.resolution;
+    const confidence = state.observations.confidence;
+    let score = 0;
+    const reasons = [];
+
+    const fit = {
+        horde: { attack: -2, defend: 3, information: 1 },
+        ambushers: { attack: -1, defend: 1, information: 3 },
+        iron: { attack: 2, defend: 0, information: 1 },
+        raiders: { attack: -1, defend: 3, information: 1 }
+    };
+    score += fit[type][p];
+
+    if (type === "ambushers" || type === "raiders") {
+        if (u === "investigate") {
+            score += 3;
+            reasons.push("Investigation improved the swarm's view of a deceptive or mobile threat.");
+        } else if (u === "commit") {
+            score -= 3;
+            reasons.push("The swarm committed while the enemy's position or intent was still concealed.");
+        }
+    } else if (u === "hold") {
+        score += 1;
+        reasons.push("Holding preserved time against a predictable advance.");
+    } else if (u === "commit") {
+        score -= 1;
+    }
+
+    if (type === "iron" && p === "attack") {
+        reasons.push("Maneuver can expose the Iron Host's slow, protected formation.");
+    }
+
+    if (type === "raiders" && p === "defend") {
+        reasons.push("A defensive objective kept attention on the fortress route.");
+    }
+
+    if (r === "majority") {
+        const votes = Object.values(agents).map(agent => agent.vote);
+        const voteCounts = votes.reduce((counts, vote) => {
+            counts[vote] = (counts[vote] || 0) + 1;
+            return counts;
+        }, {});
+        const largestCoalition = Math.max(...Object.values(voteCounts));
+        score += largestCoalition >= 2 ? 1 : 0;
+        if (type === "ambushers" && u !== "investigate") {
+            score -= 1;
+            reasons.push("The majority shared an incomplete picture of the concealed force.");
+        }
+    }
+
+    if (r === "confidence") {
+        if (confidence >= 0.7) {
+            score += 2;
+            reasons.push("Confidence weighting favored recommendations supported by reconnaissance.");
+        } else {
+            score -= 1;
+            reasons.push("Confidence weighting had little evidence to distinguish competing recommendations.");
+        }
+    }
+
+    if (r === "commander") {
+        const missionFit =
+            (type === "raiders" && p === "defend") ||
+            (type === "ambushers" && u === "investigate") ||
+            (type === "iron" && p === "attack") ||
+            (type === "horde" && p === "defend");
+        score += missionFit ? 2 : -1;
+        reasons.push(missionFit
+            ? "The Commander reconciled tactics against the strategic objective."
+            : "The Commander prioritized the stated objective, but the situation favored another response.");
+    }
+
+    if (confidence >= 0.7 && type === "ambushers" && u === "investigate") {
+        score += 1;
+        reasons.push("The Scout's improved observation reduced the Ambushers' surprise advantage.");
+    }
+
+    let result;
+    if (score >= 7) {
+        result = "decisive";
+    } else if (score >= 4) {
+        result = "costly";
+    } else if (score >= 1) {
+        result = "stalemate";
+    } else {
+        result = "defeat";
+    }
+
+    if (!reasons.length) {
+        reasons.push("The swarm acted on limited evidence and the battlefield remained difficult to read.");
+    }
+
+    return { result, score, reasons, decision };
+}
+
+function resolveSwarm(agents) {
+
+    const decision = chooseDecision();
+    const evaluation = evaluateOutcome(agents, decision);
+
+    state.outcome = {
+        decision,
+        result: evaluation.result,
+        score: evaluation.score,
+        reasons: evaluation.reasons,
+        agents,
+        initialObservations: { ...state.initialObservations },
+        groundTruth: { ...state.enemy }
+    };
+
+    document.getElementById("reconcileStatus")
+        .innerHTML =
+        '<strong>SWARM DECISION: ' +
+        decision +
+        '</strong>';
+
+    audioManager.playDecisionTone();
+
+    setTimeout(() => {
+        startBattle();
+    }, 1600);
+}
+
+
+/* =========================================================
+   BATTLE
+========================================================= */
+
+function startBattle() {
+
+    showScreen("battleScreen");
+    audioManager.play("battle");
+
+    const battlefield = document.querySelector(".battlefield");
+    const note = document.getElementById("battleNote");
+    const enemyType = state.enemy.type;
+    const decision = state.outcome.decision;
+    const result = state.outcome.result;
+
+    battlefield.dataset.enemy = enemyType;
+    battlefield.dataset.result = result;
+    note.textContent = state.enemy.label + " • " + decision;
+
+    const message =
+        document.getElementById("battleMessage");
+
+    const playerUnits =
+        ["p1", "p2", "p3", "p4"];
+
+    message.textContent =
+        "The swarm executes its collective decision...";
+
+    setTimeout(() => {
+        if (decision.includes("RECONNAISSANCE")) {
+            moveUnit("p1", "34%", "46%");
+            note.textContent = "SCOUT FORWARD • OBSERVE BEFORE COMMITTING";
+            message.textContent = "SCOUT moves forward to test the enemy position.";
+        } else if (enemyType === "raiders") {
+            moveUnit("e1", "28%", "18%");
+            moveUnit("e3", "22%", "78%");
+            note.textContent = "RAIDERS SPLIT TOWARD THE OBJECTIVE";
+            message.textContent = "Fast enemy elements split around the main engagement.";
+        } else if (enemyType === "ambushers") {
+            document.getElementById("e2").classList.add("hidden-unit");
+            document.getElementById("e4").classList.add("hidden-unit");
+            note.textContent = "CONCEALED CONTACTS";
+            message.textContent = "The enemy formation is incomplete. Some contacts remain concealed.";
+        } else if (enemyType === "iron") {
+            moveUnit("e1", "48%", "30%");
+            moveUnit("e2", "48%", "55%");
+            note.textContent = "IRON HOST • COMPACT ADVANCE";
+            message.textContent = "The Iron Host advances slowly in a tight formation.";
+        } else {
+            moveUnit("e1", "45%", "30%");
+            moveUnit("e2", "45%", "55%");
+            message.textContent = "The Horde presses forward toward the center.";
+        }
+    }, 1400);
+
+    setTimeout(() => {
+        if (decision.includes("RECONNAISSANCE")) {
+            document.querySelectorAll(".hidden-unit")
+                .forEach(unit => unit.classList.remove("hidden-unit"));
+            document.getElementById("e2").classList.add("enemy-revealed");
+            document.getElementById("e4").classList.add("enemy-revealed");
+            moveUnit("p1", "20%", "52%");
+            note.textContent = "RECONNAISSANCE COMPLETE • FORMATION ADJUSTS";
+            message.textContent = "The Scout withdraws. The swarm adjusts around the evidence.";
+        } else {
+            moveUnit("p3", "38%", "42%");
+            note.textContent = "ARCHER POSITIONED AT RANGE";
+            message.textContent = "ARCHER establishes a firing position behind the line.";
+        }
+    }, 2700);
+
+    setTimeout(() => {
+        if (decision.includes("FLANK")) {
+            moveUnit("p1", "55%", "12%");
+            moveUnit("p4", "55%", "82%");
+            note.textContent = "FLANKING LANES • FIX AND TURN";
+            message.textContent = "Forward units fix the enemy while the flank travels around the engagement.";
+        } else if (decision.includes("DEFENSE") || decision.includes("COUNTER")) {
+            moveUnit("p2", "38%", "50%");
+            note.textContent = "GUARDIAN HOLDS THE LINE";
+            message.textContent = "GUARDIAN holds the fortress route while ARCHER fires from behind.";
+        } else {
+            moveUnit("p1", "42%", "45%");
+            message.textContent = "The swarm advances only after its observations improve.";
+        }
+    }, 4200);
+
+    setTimeout(() => {
+        attack("p3", "e1");
+        message.textContent = "ARCHER launches a ranged strike across the battlefield.";
+    }, 5700);
+
+    setTimeout(() => {
+        if (decision.includes("RESERVE") || decision.includes("DEFENSE") || state.enemy.type === "raiders") {
+            moveUnit("p2", "48%", "50%");
+            moveUnit("p4", "48%", "66%");
+            note.textContent = "DEFENSIVE RESERVE COMMITS";
+            message.textContent = "The reserve enters only after the threat reveals its route.";
+            audioManager.play("shield");
+        } else {
+            moveUnit("p1", "48%", "45%");
+            message.textContent = "The forward force closes for contact.";
+        }
+    }, 7000);
+
+    setTimeout(() => {
+        attack("p2", "e2");
+        attack("p4", "e4");
+        message.textContent = result === "defeat"
+            ? "The enemy breaks through the swarm's chosen line."
+            : "Melee units close distance and make contact.";
+    }, 8500);
+
+    setTimeout(() => {
+        audioManager.setMusicPhase("result");
+        presentBattleResult(result, playerUnits);
+
+        document.getElementById("resultBanner")
+            .classList.add("show");
+
+        if (result === "decisive" || result === "costly") {
+            audioManager.play("victory");
+        } else if (result === "defeat") {
+            audioManager.play("defeat");
+        } else {
+            audioManager.play("stalemate");
+        }
+
+    }, 9800);
+
+    setTimeout(() => {
+
+        document.getElementById("resultBanner")
+            .classList.remove("show");
+
+        buildExplanation();
+
+        showScreen("explanationScreen");
+
+    }, 11900);
+}
+
+function presentBattleResult(result, playerUnits) {
+    const title = document.getElementById("resultTitle");
+    const subtitle = document.getElementById("resultSubtitle");
+    const box = document.querySelector(".result-box");
+    const battlefield = document.querySelector(".battlefield");
+
+    box.classList.remove("defeat", "stalemate", "costly");
+    battlefield.dataset.result = result;
+
+    if (result === "decisive") {
+        title.textContent = "DECISIVE VICTORY";
+        subtitle.textContent = "The enemy formation collapses and retreats.";
+        document.querySelectorAll(".battle-side.enemy .unit")
+            .forEach(unit => unit.classList.add("retreating"));
+        playerUnits.forEach(id => document.getElementById(id).style.transform = "scale(1.12)");
+    } else if (result === "costly") {
+        title.textContent = "COSTLY VICTORY";
+        subtitle.textContent = "The enemy retreats, but the swarm pays for the decision.";
+        box.classList.add("costly");
+        document.getElementById("p2").classList.add("disabled-unit");
+        document.querySelectorAll(".battle-side.enemy .unit")
+            .forEach(unit => unit.classList.add("retreating"));
+    } else if (result === "stalemate") {
+        title.textContent = "STALEMATE";
+        subtitle.textContent = "Both forces disengage. The objective remains contested.";
+        box.classList.add("stalemate");
+        document.querySelectorAll(".unit").forEach(unit => unit.classList.add("retreating"));
+    } else {
+        title.textContent = "DEFEAT";
+        subtitle.textContent = "The enemy retains the field and the swarm withdraws.";
+        box.classList.add("defeat");
+        playerUnits.forEach(id => document.getElementById(id).classList.add("retreating"));
+    }
+}
+
+
+function moveUnit(id, left, top) {
+
+    const unit = document.getElementById(id);
+
+    unit.style.left = left;
+    unit.style.top = top;
+}
+
+function createImpact(target) {
+    const flash = document.createElement("div");
+    flash.className = "flash";
+    flash.style.left = target.offsetLeft + target.offsetWidth / 2 - 50 + "px";
+    flash.style.top = target.offsetTop + target.offsetHeight / 2 - 50 + "px";
+    document.querySelector(".battlefield").appendChild(flash);
+    setTimeout(() => flash.remove(), 600);
+}
+
+function fireProjectile(attacker, target) {
+    const battlefield = document.querySelector(".battlefield");
+    const battlefieldRect = battlefield.getBoundingClientRect();
+    const attackerRect = attacker.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const startX = attackerRect.left - battlefieldRect.left + attackerRect.width / 2;
+    const startY = attackerRect.top - battlefieldRect.top + attackerRect.height / 2;
+    const endX = targetRect.left - battlefieldRect.left + targetRect.width / 2;
+    const endY = targetRect.top - battlefieldRect.top + targetRect.height / 2;
+    const projectile = document.createElement("div");
+    const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+
+    projectile.className = "projectile";
+    projectile.style.left = startX + "px";
+    projectile.style.top = startY + "px";
+    projectile.style.transform = "rotate(" + angle + "deg)";
+    battlefield.appendChild(projectile);
+
+    requestAnimationFrame(() => {
+        projectile.style.left = endX + "px";
+        projectile.style.top = endY + "px";
+    });
+
+    setTimeout(() => {
+        projectile.remove();
+        target.classList.add("hit");
+        createImpact(target);
+        setTimeout(() => target.classList.remove("hit"), 500);
+    }, 720);
+}
+
+function meleeContact(attacker, target) {
+    const attackerRect = attacker.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const dx = targetRect.left - attackerRect.left;
+    const dy = targetRect.top - attackerRect.top;
+
+    attacker.style.transition = "transform .7s cubic-bezier(.2,.8,.3,1)";
+    attacker.style.transform = "translate(" + dx + "px," + dy + "px) scale(1.18)";
+    setTimeout(() => {
+        target.classList.add("hit");
+        createImpact(target);
+        audioManager.play("sword");
+        setTimeout(() => {
+            target.classList.remove("hit");
+            attacker.classList.remove("attack");
+            attacker.style.transform = "translate(" + (dx * .72) + "px," + (dy * .72) + "px) scale(1)";
+        }, 500);
+    }, 720);
+}
+
+function attack(attackerId, targetId) {
+
+    const attacker =
+        document.getElementById(attackerId);
+
+    const target =
+        document.getElementById(targetId);
+
+    if (attackerId === "p3") {
+        audioManager.play("arrow");
+        fireProjectile(attacker, target);
+        return;
+    }
+
+    attacker.classList.add("attack");
+    meleeContact(attacker, target);
+}
+
+
+/* =========================================================
+   EXPLANATION
+========================================================= */
+
+function buildExplanation() {
+
+    const data = state.outcome;
+    const a = data.agents;
+    const truth = data.groundTruth;
+    const initial = data.initialObservations;
+    const improved = state.observations;
+    const resultLabels = {
+        decisive: "DECISIVE VICTORY",
+        costly: "COSTLY VICTORY",
+        stalemate: "STALEMATE",
+        defeat: "DEFEAT"
+    };
+
+    document.getElementById("finalDecision")
+        .textContent = data.decision;
+
+    document.getElementById("explanationMeta").innerHTML =
+        "<div><strong>PLAYER OBJECTIVE</strong>" + state.choices.priority.toUpperCase() + "</div>" +
+        "<div><strong>UNCERTAINTY POLICY</strong>" + state.choices.uncertainty.toUpperCase() + "</div>" +
+        "<div><strong>RECONCILIATION</strong>" + state.choices.resolution.toUpperCase() + "</div>" +
+        "<div><strong>INITIAL OBSERVATIONS</strong>" + summarizeObservations(initial) + "</div>" +
+        "<div><strong>FINAL OBSERVATIONS</strong>" + summarizeObservations(improved) + "</div>" +
+        "<div><strong>ACTUAL ENEMY GROUND TRUTH</strong>" + truth.label + " • " + truth.intent + "</div>";
+
+    const grid =
+        document.getElementById("reasonGrid");
+
+    grid.innerHTML = "";
+
+    const reasons = [
+        {
+            name: "SCOUT",
+            icon: "🔭",
+            text: a.scout.thought
+        },
+        {
+            name: "WARRIOR",
+            icon: "⚔",
+            text: a.warrior.thought
+        },
+        {
+            name: "GUARDIAN",
+            icon: "🛡",
+            text: a.guardian.thought
+        },
+        {
+            name: "ARCHER",
+            icon: "🏹",
+            text: a.archer.thought
+        }
+    ];
+
+    reasons.forEach(reason => {
+
+        const card =
+            document.createElement("div");
+
+        card.className = "reason";
+
+        card.innerHTML =
+            "<strong>" +
+            reason.icon +
+            " " +
+            reason.name +
+            "</strong>" +
+            "<p>" +
+            reason.text +
+            "</p>";
+
+        grid.appendChild(card);
+    });
+
+    const outcomeCard = document.createElement("div");
+    outcomeCard.className = "reason";
+    outcomeCard.style.gridColumn = "1 / -1";
+    outcomeCard.innerHTML =
+        "<strong>RESULT: " + resultLabels[data.result] + "</strong>" +
+        "<p>" + data.reasons.join(" ") + "</p>";
+    grid.appendChild(outcomeCard);
+}
+
+function summarizeObservations(observations) {
+    return observations.strength + " / " +
+        observations.mobility + " / " +
+        observations.position + " / " +
+        observations.intent +
+        " (" + Math.round(observations.confidence * 100) + "% confidence)";
+}
+
+</script>
+
+</body>
+</html>
